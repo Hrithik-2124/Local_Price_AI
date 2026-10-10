@@ -593,27 +593,31 @@ if "products" in st.session_state:
                 # -----------------------------------------
       
                 # ACTIONS
+                #-----------------------------------------------------
+                #-------------------------------------------------------------
                 with cols[4]:
                     shopping_url = (
                         product.get("direct_link")
                         or product.get("product_url")
                         or product.get("offer_link")
                         or product.get("link")
-                    )
+                        or product.get("product_link")
+                )
 
-                    if (
-                        isinstance(shopping_url, str)
-                        and shopping_url.startswith("https://")
-                    ):
-                        st.link_button(
-                            "🛒 Open Seller Website",
-                            shopping_url,
-                            key=f"seller_link_{i}"
-                        )
-                    else:
-                        st.caption(
-                            "Direct seller link unavailable"
-                        )
+    if isinstance(shopping_url, str):
+        shopping_url = shopping_url.strip()
+
+    if (
+        isinstance(shopping_url, str)
+        and shopping_url.startswith(("https://", "http://"))
+    ):
+        st.link_button(
+            "🛒 Open Shopping Page",
+            shopping_url,
+            key=f"seller_link_{i}"
+        )
+    else:
+        st.caption("Shopping link unavailable")
 
 
 
