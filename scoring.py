@@ -56,113 +56,62 @@ def _price_from_item(product):
     )
 
 
-def enrich_products(
-    raw_products,
-    budget=0
-):
 
+def enrich_products(raw_products, budget=0):
     products = []
 
-
     for product in raw_products:
-
-        price = _price_from_item(
-            product
-        )
-
+        price = _price_from_item(product)
 
         if price is None:
             continue
 
-
         item = dict(product)
 
+        # Normalize shopping URL fields
+        item["direct_link"] = (
+            product.get("direct_link")
+            or product.get("product_link")
+            or product.get("product_url")
+            or product.get("offer_link")
+            or product.get("link")
+            or ""
+        )
 
         item["price"] = price
 
-
         item["price_text"] = (
-            product.get(
-                "price"
-            )
-            or
-            f"₹{price:,.0f}"
+            product.get("price")
+            or f"₹{price:,.0f}"
         )
 
-
-        item["rating"] = _num(
-            product.get(
-                "rating"
-            )
-        )
-
+        item["rating"] = _num(product.get("rating"))
 
         item["reviews"] = int(
-            _num(
-                product.get(
-                    "reviews"
-                )
-            )
-            or 0
+            _num(product.get("reviews")) or 0
         )
 
-
-        item["old_price"] = (
-            product.get(
-                "old_price"
-            )
-        )
-
-
+        item["old_price"] = product.get("old_price")
         item["discount_pct"] = None
 
+        old_price = _num(product.get("extracted_old_price"))
 
-        old_price = _num(
-            product.get(
-                "extracted_old_price"
-            )
-        )
-
-
-        if (
-            old_price
-            and
-            old_price > price
-        ):
-
+        if old_price and old_price > price:
             item["discount_pct"] = round(
-
-                (
-                    old_price - price
-                )
-                /
-                old_price
-                *
-                100,
-
+                (old_price - price) / old_price * 100,
                 1
             )
 
-
         item["within_budget"] = bool(
-
-            budget
-            and
-            price <= budget
+            budget and price <= budget
         )
 
+        products.append(item)
 
-        products.append(
-            item
-        )
-
-
-    products.sort(
-        key=lambda x: x["price"]
-    )
-
+    products.sort(key=lambda x: x["price"])
 
     return products
+
 
 
 def haversine_km(
